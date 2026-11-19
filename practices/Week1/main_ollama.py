@@ -5,19 +5,21 @@ from pathlib import Path
 from typing import Literal
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-import certifi
-import httpx
 import requests
 import csv
+ 
+print("DEBUG: MAIN STARTED", flush=True)
 
 # Configuration
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
  
 GOLD_FILE = BASE_DIR / "data/evaluation/issue_classification_gold.json"
-PROMPT_FILE = BASE_DIR / "practices/Week1/prompts.md"
-OUTPUT_FILE = BASE_DIR / "practices/Week1/predictions.csv"
+PROMPT_FILE = BASE_DIR / "practices/Week1/prompts_v3.md"
+OUTPUT_FILE = BASE_DIR / "practices/Week1/predictions_v3.csv"
  
 load_dotenv(BASE_DIR / ".env")
+print("get config", flush=True)
+
 MODEL = os.getenv("OPENAI_MODEL")
 OLLAMA_URL = os.getenv("OLLAMA_URL")
 # Pydantic schema
@@ -52,40 +54,40 @@ def load_gold():
     Return: list of dictionaries.
     """
     path = Path(GOLD_FILE)
-
+ 
     if not path.exists():
         raise FileNotFoundError(f"File not found: {path}")
-
+ 
     with open(path, "r", encoding="utf-8") as file:
         data = json.load(file)
-
+ 
     if not isinstance(data, list):
         raise ValueError("gold.json must contain a JSON array")
-
+ 
     records = []
-
+ 
     for index, item in enumerate(data):
         issue_id = item.get("issue_id")
         text = item.get("text")
-
+ 
         if not issue_id or not text:
             raise ValueError(f"Invalid record at index {index}")
-
+ 
         records.append({
             "issue_id": issue_id,
             "text": text
         })
-
+ 
     print(f"Loaded {len(records)} records")
-
+ 
     return records
-
+ 
  
 def classify_issues(
     prompt,
     text: str
 ) -> dict:
-    
+   
     # JSON schema
     response_schema = {
         "type": "object",
@@ -147,7 +149,7 @@ def classify_issues(
         timeout=600
     )
     response.raise_for_status()
-
+ 
     result = response.json()
     return result["message"]["content"]
  
@@ -176,59 +178,58 @@ def validate_json(response_text: str):
     except ValidationError as e:
         raise ValueError(f"Pydantic validation failed:\n{e}")
  
-
+ 
 def export_csv(results):
-    import csv
-
+ 
     fieldnames = [
         "issue_id",
         "predicted_category",
         "predicted_priority"
     ]
-
-    with open(OUTPUT_FILE, "w", newline="", encoding="utf-8-sig") as file:
+ 
+    with open(OUTPUT_FILE, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
-
+ 
     print(f"Exported {len(results)} records to {OUTPUT_FILE}")
-
  
 # Main
 def main():
  
     try:
+        print("DEBUG: MAIN STARTED loading prompt", flush=True)
         prompt = load_prompt()
+        print("DEBUG: Loading gold data", flush=True)
+
         issues = load_gold()
  
-        print(f"Loaded {len(issues)} issues")
-        print("Prompt loaded from prompts.md")
+        print("Prompt loaded from",PROMPT_FILE)
         # Step 2: Initialize a new results array
         results = []
-
+ 
         # Step 3: Classify each record
         for record in issues:
             issue_id = record["issue_id"]
             text = record["text"]
-
+ 
             print(f"Classifying {issue_id}...")
-
             classification = classify_issues(prompt, text)
             predictions = validate_json(classification)
             # Step 4: Merge original data and classification result
             result = {
                 "issue_id": issue_id,
-                "predicted_category": predictions.category,
+                "predicted_category": predictions.category.capitalize(),
                 "predicted_priority": predictions.priority
             }
-
+ 
             results.append(result)
-
+ 
         # Step 5: Export results
         export_csv(results)
-
+ 
         print(f"Completed: {len(results)} records processed.")
-  
+ 
     except Exception as error:
         print(f"FAILED: {error}")
         sys.exit(1)
