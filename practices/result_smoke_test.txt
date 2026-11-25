@@ -1,0 +1,11 @@
+### Command
+python scripts/smoke_test.py
+### Result
+documents          15
+jira_issues        30
+issue_cases        20
+retrieval_cases    20
+rag_cases          30
+agent_cases        20
+security_cases     10
+PASS - fixture files and counts are consistent
