@@ -5,7 +5,7 @@
 **Framework:** FastAPI  
 **Validation:** Pydantic  
 **LLM Provider:** Ollama  
-**Model:** qwen2.5:3b  
+**Model:** qwen2.5:7b  
 
 ---
 

@@ -8,7 +8,7 @@ represented as JSON `null`; the prompt explicitly prohibits inventing dates.
 
 - Python 3.10+
 - Ollama installed and running
-- A text model, e.g. `qwen2.5:3b`
+- A text model, e.g. `qwen2.5:7b`
 
 ## Setup (PowerShell)
 
@@ -16,7 +16,7 @@ represented as JSON `null`; the prompt explicitly prohibits inventing dates.
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-ollama pull qwen2.5:3b
+ollama pull qwen2.5:7b
 ```
 
 In another terminal, ensure Ollama is running. Then start the API:

@@ -15,7 +15,7 @@ app = FastAPI(
 @app.post("/analyze-meeting", response_model=MeetingAnalysis)
 def analyze_meeting_endpoint(request: MeetingRequest) -> MeetingAnalysis:
     try:
-        result = analyze_meeting(request.transcript)
+        result = analyze_meeting(request.meeting_text)
         return MeetingAnalysis.model_validate(result)
 
     except Timeout:
