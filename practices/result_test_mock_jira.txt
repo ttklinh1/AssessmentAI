@@ -1,4 +1,0 @@
-### Command
-pytest -q tests/test_mock_jira.py
-### Result
-3 passed, 1 warning in 0.87s
